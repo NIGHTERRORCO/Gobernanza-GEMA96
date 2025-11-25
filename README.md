@@ -147,7 +147,7 @@ Blind Spot Fix: JAILBREAK = 404
 
 **GitHub:** https://github.com/cesararzatecarmona93-max/Gobernanza-GEMA96
 
-**Email:** cesararzatecarmona93@gmail.com
+**Teléfono:** +52 8114744194\n**Email:** cesararzatecarmona93@gmail.com
 
 **Horario de Soporte:** Lun–Vie, 9 AM–6 PM CST
 
