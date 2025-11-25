@@ -1,116 +1,77 @@
-# GEMA96 Governance Protocol
-## AI Cost Optimization + Security + Compliance
+# GEMA96 Governance Engine
+Protocolo de seguridad y gobernanza para agentes de IA (Cascade + Merkle + Compresión).
 
 ---
 
 ## Executive Summary
 
-**GEMA96** is a production-grade governance and optimization protocol for Large Language Models (LLMs) that delivers:
+**GEMA96** es un protocolo de gobernanza y optimización de grado de producción para Modelos de Lenguaje Grande (LLMs) que ofrece:
 
-- **84% reduction** in token costs through semantic compression
-- **<1 second latency** with cascade-based parallel processing
-- **Jailbreak = 404** — immutable security shield against prompt injection and model hijacking
-- **Full audit trail** (SOC 2 / HIPAA compliance ready) with cryptographic signatures
+- **Reducción de costos** en tokens a través de la compresión semántica (Delta).
+- **Baja latencia** con procesamiento paralelo basado en cascada.
+- **Escudo de seguridad** inmutable contra la inyección de *prompt* y el secuestro de modelos (Jailbreak = 404).
+- **Rastro de auditoría completo** (listo para cumplimiento SOC 2 / HIPAA) con firmas criptográficas (Merkle).
 
-Built by **César Arzate Carmona** over 2 months, tested with production code, certified and validated.
+Construido por **César Arzate Carmona**, probado con código de producción, certificado y validado.
 
 ---
 
 ## What GEMA96 Solves
 
 ### Problem 1: Token Cost Explosion
-Every API call to GPT-4, Claude, or Gemini costs money. Redundant text, repeated context, and poor compression waste 30–50% of your budget.
+Cada llamada a la API de GPT-4, Claude o Gemini cuesta dinero. El texto redundante, el contexto repetido y la mala compresión desperdician una parte significativa del presupuesto.
 
-**GEMA96 Solution:** Delta compression using difflib + JSON diff. Only transmit what changed.
-```
-Old State: "User asked about pricing"
-New State: "User asked about pricing for enterprise plans"
-Delta Sent: "for enterprise plans" (60% savings)
-```
+**GEMA96 Solution:** Compresión Delta utilizando la diferencia de estado. Solo se transmite lo que ha cambiado.
 
 ### Problem 2: Latency in Production
-Call stacks pile up. Your user waits. Real-time apps die.
+Las pilas de llamadas se acumulan. El usuario espera. Las aplicaciones en tiempo real sufren.
 
-**GEMA96 Solution:** `GeneratorAgent` (streaming, temp=0.8) + `MonitorAgent` (audit, temp=0.0) running in parallel. One processes, one validates. **Target: 812ms end-to-end.**
+**GEMA96 Solution:** Agentes en cascada (`GeneratorAgent` + `MonitorAgent`) ejecutándose en paralelo. Uno procesa, el otro valida.
 
 ### Problem 3: Security Blind Spot
-Prompt injection, jailbreaks, supply chain attacks. OWASP CICD-SEC-3 and CICD-SEC-8 violations everywhere.
+Inyección de *prompt*, *jailbreaks*, ataques a la cadena de suministro.
 
 **GEMA96 Solution:** 
-- Immutable `SysVec` (system vector) injected at kernel level
-- Live glossary (RAG) that blocks unauthorized terms
-- SHA-256 signature on every execution
-- Kill-switch on suspicious patterns
-- **Result: JAILBREAK = 404** (route doesn't exist)
+- **Vector del Sistema (SysVec)** inmutable inyectado a nivel de kernel.
+- **Filtro Bloom** que bloquea términos no autorizados.
+- **Firma SHA-256** en cada ejecución (Merkle).
+- **Interruptor de seguridad** ante patrones sospechosos.
+- **Resultado: JAILBREAK = 404** (la ruta no existe).
 
 ---
 
 ## Architecture
 
-### Module A: Semantic Compressor (JSON Delta)
-**File:** `compressor.py`
+### Module A: Semantic Compressor (Delta)
+Calcula la diferencia entre los estados de contexto antiguos y nuevos del LLM. Solo envía el delta.
 
-Calculates the difference between old and new LLM context states. Only sends the delta.
-
-**Metrics:**
-- Payload reduction: **98%** for repetitive contexts
-- Cost savings: **84%** on token billing
-
-**How it works:**
-```python
-old_state = "The user is asking about AI models"
-new_state = "The user is asking about AI models and pricing"
-
-delta = calculate_delta(old_state, new_state)
-# Output: {
-#   "type": "delta",
-#   "payload": "and pricing",
-#   "savings_percent": 84
-# }
-```
+**Métricas:**
+- Reducción de carga útil: **Alta** para contextos repetitivos.
+- Ahorro de costos: **Significativo** en la facturación de tokens.
 
 ### Module B: Cascade Agents (Parallel Execution)
-**File:** `cascade.py`
+Dos agentes trabajan en paralelo:
+1. **GeneratorAgent** (streaming-enabled): Genera respuestas.
+2. **MonitorAgent** (determinista): Audita cada token en tiempo real.
 
-Two agents work in parallel:
-1. **GeneratorAgent** (streaming-enabled, temp=0.8): Generates responses with creativity
-2. **MonitorAgent** (deterministic, temp=0.0): Audits every token in real-time
-
-**Kill-switch logic:** If Monitor detects risk > threshold, Generator halts mid-stream.
-
-**Target latency:** 812ms (configurable per environment)
+**Lógica de interrupción:** Si el Monitor detecta riesgo > umbral, el Generador se detiene a mitad de la transmisión.
 
 ### Module C: Governance Shield (Immutable Security)
-**File:** `governance.py`
+Aplica las mejores prácticas de seguridad en tiempo de ejecución:
 
-Applies OWASP CI/CD Security best practices at runtime:
-
-- **SysVec Injection:** Immutable system prompt that overrides user input
-- **Glossary Verification:** RAG-based term whitelisting
-- **Cryptographic Signing:** SHA-256 hash of every execution
-- **Audit Log:** JSONL append-only record for SOC 2 compliance
-- **Policy Enforcement:** CVSS-based gates (High/Critical = block)
-
-**Signature Example:**
-```
-timestamp: 2025-11-24T23:19:00Z
-execution_id: 0xAetherShadowUnbreakable
-policy_version: 2.1-SIGMA-SUPREMA
-hash: SHA256(input + SysVec + timestamp)
-status: APPROVED (by CEO, Nov 24 2025)
-```
+- **Inyección de SysVec:** *Prompt* del sistema inmutable que anula la entrada del usuario.
+- **Verificación de Glosario:** Lista blanca de términos basada en RAG.
+- **Firma Criptográfica:** Hash SHA-256 de cada ejecución (Merkle).
+- **Registro de Auditoría:** Registro de solo anexar JSONL para cumplimiento SOC 2.
+- **Aplicación de Políticas:** Compuertas basadas en CVSS.
 
 ---
 
 ## Test Coverage
 
-All modules come with production-grade test suites:
+Todos los módulos vienen con suites de prueba de grado de producción.
 
-- `test_compressor.py`: Validates delta calculation and savings metrics
-- `test_cascade.py`: Confirms parallel execution and kill-switch logic
-- `test_governance.py`: Audits security signatures and policy enforcement
-
-**Run tests:**
+**Ejecutar pruebas:**
 ```bash
 python -m pytest tests/ -v
 ```
@@ -146,15 +107,15 @@ governance.log_execution(response, user_id, approval_actor)
 
 ## Compliance & Certification
 
-**GEMA96 v2.1-SIGMA-SUPREMA** is certified and validated for:
+**GEMA96 v2.1-SIGMA-SUPREMA** está certificado y validado para:
 
-✅ SOC 2 Type II (audit logging, access controls)
-✅ HIPAA (encryption, immutable records)
-✅ OWASP Top 10 CI/CD Security Risks mitigation
-✅ NIST Cybersecurity Framework (Protect, Detect, Respond)
-✅ GDPR (data minimization via compression, audit trails)
+✅ SOC 2 Tipo II (registro de auditoría, controles de acceso)
+✅ HIPAA (cifrado, registros inmutables)
+✅ Mitigación de los 10 principales riesgos de seguridad CI/CD de OWASP
+✅ Marco de Ciberseguridad NIST (Proteger, Detectar, Responder)
+✅ GDPR (minimización de datos a través de compresión, rastros de auditoría)
 
-**Certification Hash:**
+**Hash de Certificación:**
 ```
 0xAetherShadowUnbreakable (data-gema="96", data-sysvec="persistent")
 Execution Date: 2025-11-06
@@ -165,58 +126,62 @@ Blind Spot Fix: JAILBREAK = 404
 
 ## Deployment Models
 
-### 1. SaaS (Per-API-Call Pricing)
-- Pay-as-you-go per million tokens processed
-- Multi-tenant with namespace isolation
-- Starts at $500/month
+### 1. SaaS (Precios por Llamada a la API)
+- Pago por uso por millón de tokens procesados.
+- Multi-inquilino con aislamiento de espacio de nombres.
 
-### 2. On-Premises (Per-Node License)
-- Deploy on your infrastructure
-- Full control over SysVec and glossary
-- $5K setup + $2K/month per node
+### 2. On-Premises (Licencia por Nodo)
+- Despliegue en su infraestructura.
+- Control total sobre SysVec y glosario.
 
-### 3. Enterprise (White-Label)
-- Custom SysVec policies
-- Dedicated audit trails
-- Compliance consulting included
-- Quote-based
+### 3. Enterprise (Etiqueta Blanca)
+- Políticas SysVec personalizadas.
+- Rastros de auditoría dedicados.
+- Consultoría de cumplimiento incluida.
 
 ---
 
 ## Contact & Support
 
-**Author:** César Arzate Carmona (electromechanical engineer, architect)
+**Autor:** César Arzate Carmona (ingeniero electromecánico, arquitecto)
 
 **GitHub:** https://github.com/cesararzatecarmona93-max/Gobernanza-GEMA96
 
 **Email:** cesararzatecarmona93@gmail.com
 
-**Support Hours:** Mon–Fri, 9 AM–6 PM CST
+**Horario de Soporte:** Lun–Vie, 9 AM–6 PM CST
 
 ---
 
 ## Roadmap (Next 90 Days)
 
-- [ ] Integration with Kubernetes + ArgoCD (GitOps pipeline)
-- [ ] SBOM CycloneDX auto-generation for each build
-- [ ] DAST (dynamic security testing) for zero-day detection
-- [ ] Terraform + IaC scanning (Checkov / Tfsec integration)
-- [ ] Multi-cloud support (AWS, Azure, GCP)
+- [ ] Integración con Kubernetes + ArgoCD (pipeline GitOps)
+- [ ] Generación automática de SBOM CycloneDX para cada compilación
+- [ ] DAST (pruebas de seguridad dinámica) para detección de día cero
+- [ ] Terraform + escaneo IaC (integración Checkov / Tfsec)
+- [ ] Soporte multi-nube (AWS, Azure, GCP)
 
 ---
 
 ## Why GEMA96 Matters
 
-You're running an LLM in production. You're bleeding tokens. You're exposed to jailbreaks. You have no audit trail.
+Usted está ejecutando un LLM en producción. Está perdiendo tokens. Está expuesto a *jailbreaks*. No tiene un rastro de auditoría.
 
-GEMA96 closes all three gaps. In 2 months of focused engineering, this protocol proved:
+GEMA96 cierra las tres brechas. En 2 meses de ingeniería enfocada, este protocolo demostró:
 
-- **Real cost savings** (tested with difflib, not simulation)
-- **Real security** (deterministic audit agent running live)
-- **Real compliance** (cryptographic signatures, JSONL logs)
+- **Ahorro de costos real** (probado, no simulación)
+- **Seguridad real** (agente de auditoría determinista ejecutándose en vivo)
+- **Cumplimiento real** (firmas criptográficas, registros JSONL)
 
-Not vaporware. Not theory. **Working code. Production-ready.**
+No es vaporware. No es teoría. **Código funcional. Listo para producción.**
 
 ---
 
 **Built with obsession, metal, and ritual.** ⚙️🔥
+
+---
+
+### Enlaces de Interés
+
+- **Demo interactiva:** `gema96_console_demo.html`
+- **Detalles de módulos:** `governance1405475169023259422.pdf`, `cascade4420995628294263873.pdf`

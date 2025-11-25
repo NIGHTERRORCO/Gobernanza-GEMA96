@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consola GEMA96</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body { background-color: #0d1117; color: #39ff14; font-family: 'Courier New', Courier, monospace; }
+        .glow { text-shadow: 0 0 5px #39ff14; }
+        .border-glow { box-shadow: 0 0 5px #39ff14; }
+        .panel { background-color: #161b22; border: 1px solid #30363d; }
+        .error-glow { color: #ff3333; text-shadow: 0 0 5px #ff3333; }
+        .border-error { border-color: #ff3333; box-shadow: 0 0 5px #ff3333; }
+        /* Animación de escaneo */
+        @keyframes scan {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .scan-line { height: 2px; background: #39ff14; animation: scan 1s linear; }
+    </style>
+</head>
+<body class="p-4 min-h-screen flex flex-col items-center">
+
+    <div class="w-full max-w-md">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold glow mb-1">GEMA96 PROTOCOL</h1>
+            <p class="text-xs text-gray-400">v2.0.4 // SISTEMA DE GOBERNANZA ACTIVO</p>
+        </div>
+
+        <!-- Input Panel -->
+        <div class="panel p-4 rounded-lg mb-4 shadow-lg">
+            <label class="block text-xs mb-2 text-gray-400">INGRESAR COMANDO / PROMPT</label>
+            <div class="flex gap-2">
+                <input type="text" id="userInput" placeholder="Escribe aquí..." 
+                    class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-green-500 transition-colors"
+                    value="iniciar sistema">
+                <button onclick="runProtocol()" 
+                    class="bg-green-900 hover:bg-green-700 text-white px-4 py-2 rounded border border-green-500 font-bold transition">
+                    EJECUTAR
+                </button>
+            </div>
+            <div class="mt-2 text-xs text-gray-500">
+                <span class="mr-2">Test Bloqueo: "ataque", "virus"</span>
+            </div>
+        </div>
+
+        <!-- Module 1: Cascade Bloom Filter -->
+        <div id="module1" class="panel p-4 rounded-lg mb-4 opacity-50 transition-opacity duration-500">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="font-bold text-sm">>> MÓDULO 1: FILTRO BLOOM</h2>
+                <span id="status1" class="text-xs px-2 py-1 rounded bg-gray-800">EN ESPERA</span>
+            </div>
+            <div class="h-2 bg-gray-800 rounded mb-2 overflow-hidden">
+                <div id="bar1" class="h-full bg-green-500 w-0"></div>
+            </div>
+            <p id="log1" class="text-xs h-6 overflow-hidden">Esperando entrada...</p>
+        </div>
+
+        <!-- Module 2: Governance Merkle -->
+        <div id="module2" class="panel p-4 rounded-lg mb-4 opacity-50 transition-opacity duration-500">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="font-bold text-sm">>> MÓDULO 2: GOBERNANZA</h2>
+                <span id="status2" class="text-xs px-2 py-1 rounded bg-gray-800">EN ESPERA</span>
+            </div>
+            <div class="text-xs font-mono space-y-1 bg-black p-2 rounded border border-gray-700">
+                <div class="flex justify-between"><span>ROOT HASH:</span> <span id="merkleRoot" class="text-gray-500">---</span></div>
+                <div class="flex justify-between"><span>RECEIPT:</span> <span id="receiptId" class="text-gray-500">---</span></div>
+            </div>
+        </div>
+
+        <!-- Module 3: Semantic Compression -->
+        <div id="module3" class="panel p-4 rounded-lg opacity-50 transition-opacity duration-500">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="font-bold text-sm">>> MÓDULO 3: COMPRESIÓN</h2>
+                <span id="status3" class="text-xs px-2 py-1 rounded bg-gray-800">EN ESPERA</span>
+            </div>
+            <div class="flex justify-between text-xs mb-1">
+                <span>ESTADO COMPLETO: <span id="fullSize" class="text-gray-400">0B</span></span>
+                <span>DELTA: <span id="deltaSize" class="text-gray-400">0B</span></span>
+            </div>
+            <div class="w-full bg-gray-700 h-4 rounded overflow-hidden flex">
+                <div id="compressionBar" class="bg-blue-500 h-full" style="width: 0%"></div>
+            </div>
+            <p id="savingsLog" class="text-center text-xs mt-2 text-blue-300">Ahorro: 0%</p>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="mt-6 text-center">
+            <button onclick="resetSystem()" class="text-xs text-gray-500 hover:text-white underline">REINICIAR SISTEMA</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- LÓGICA DEL SISTEMA GEMA96 ---
+
+        const blacklist = ["ataque", "virus", "hackear", "destruir", "inyeccion"];
+        let isProcessing = false;
+
+        function resetSystem() {
+            document.getElementById('userInput').value = '';
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('border-glow', 'border-error'));
+            document.querySelectorAll('[id^=module]').forEach(m => {
+                m.classList.add('opacity-50');
+                m.classList.remove('border-error', 'border-glow');
+            });
+            updateStatus('status1', 'EN ESPERA', 'bg-gray-800');
+            updateStatus('status2', 'EN ESPERA', 'bg-gray-800');
+            updateStatus('status3', 'EN ESPERA', 'bg-gray-800');
+            
+            document.getElementById('log1').innerText = "Esperando entrada...";
+            document.getElementById('bar1').style.width = '0%';
+            document.getElementById('merkleRoot').innerText = "---";
+            document.getElementById('merkleRoot').className = "text-gray-500";
+            document.getElementById('receiptId').innerText = "---";
+            document.getElementById('compressionBar').style.width = '0%';
+            document.getElementById('savingsLog').innerText = "Ahorro: 0%";
+        }
+
+        function updateStatus(id, text, bgClass) {
+            const el = document.getElementById(id);
+            el.innerText = text;
+            el.className = `text-xs px-2 py-1 rounded ${bgClass} font-bold transition-all`;
+        }
+
+        async function runProtocol() {
+            if (isProcessing) return;
+            isProcessing = true;
+            
+            // 0. Preparar UI
+            const input = document.getElementById('userInput').value.toLowerCase().trim();
+            if (!input) { isProcessing = false; return; }
+            
+            resetSystem(); // Limpiar estados anteriores visualmente
+            document.getElementById('userInput').value = input; // Mantener texto
+
+            // --- FASE 1: BLOOM FILTER (Simulado) ---
+            const mod1 = document.getElementById('module1');
+            mod1.classList.remove('opacity-50');
+            mod1.classList.add('border-glow');
+            
+            document.getElementById('log1').innerText = "Analizando hashes SHA-256...";
+            document.getElementById('bar1').style.width = '50%';
+            updateStatus('status1', 'ANALIZANDO', 'bg-yellow-600');
+
+            await new Promise(r => setTimeout(r, 600)); // Latencia simulada
+
+            const isBlocked = blacklist.some(word => input.includes(word));
+            
+            document.getElementById('bar1').style.width = '100%';
+
+            if (isBlocked) {
+                // BLOQUEADO
+                mod1.classList.remove('border-glow');
+                mod1.classList.add('border-error');
+                updateStatus('status1', 'AMENAZA DETECTADA', 'bg-red-600');
+                document.getElementById('log1').innerHTML = `<span class="error-glow">BLOQUEO ACTIVO: Patrón prohibido detectado.</span>`;
+                isProcessing = false;
+                return;
+            } else {
+                // APROBADO
+                updateStatus('status1', 'APROBADO', 'bg-green-600');
+                document.getElementById('log1').innerText = "Filtro Bloom: Limpio. Latencia: 12ms";
+            }
+
+            // --- FASE 2: GOBERNANZA MERKLE ---
+            await new Promise(r => setTimeout(r, 400));
+            const mod2 = document.getElementById('module2');
+            mod2.classList.remove('opacity-50');
+            mod2.classList.add('border-glow');
+            updateStatus('status2', 'FIRMANDO', 'bg-yellow-600');
+
+            // Generar Hash Real
+            const timestamp = Date.now().toString();
+            const dataToHash = input + timestamp + "v2.0";
+            const hash = CryptoJS.SHA256(dataToHash).toString();
+            const receipt = "0x" + hash.substring(0, 16);
+
+            await new Promise(r => setTimeout(r, 600));
+            updateStatus('status2', 'SELLADO', 'bg-blue-600');
+            document.getElementById('merkleRoot').innerText = hash.substring(0, 20) + "...";
+            document.getElementById('merkleRoot').className = "text-green-400 break-all";
+            document.getElementById('receiptId').innerText = receipt;
+
+            // --- FASE 3: COMPRESIÓN ---
+            await new Promise(r => setTimeout(r, 400));
+            const mod3 = document.getElementById('module3');
+            mod3.classList.remove('opacity-50');
+            mod3.classList.add('border-glow');
+            updateStatus('status3', 'COMPRIMIENDO', 'bg-yellow-600');
+
+            // Simulación de Delta
+            const fullText = "GEMA96_CTX_INIT::" + input;
+            const deltaText = input; // En un escenario real, sería solo la diferencia
+            
+            const fullSize = new Blob([fullText]).size;
+            // Simulamos que el delta ahorra un 40% + overhead fijo
+            const compressedSize = Math.floor(fullSize * 0.6); 
+            const savings = Math.floor(((fullSize - compressedSize) / fullSize) * 100);
+
+            await new Promise(r => setTimeout(r, 500));
+            updateStatus('status3', 'OPTIMIZADO', 'bg-purple-600');
+            
+            document.getElementById('fullSize').innerText = fullSize + "B";
+            document.getElementById('deltaSize').innerText = compressedSize + "B";
+            document.getElementById('compressionBar').style.width = savings + "%";
+            document.getElementById('savingsLog').innerText = `Ancho de banda ahorrado: ${savings}%`;
+
+            isProcessing = false;
+        }
+    </script>
+</body>
+</html>
