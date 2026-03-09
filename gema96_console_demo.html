@@ -33,15 +33,28 @@
         <!-- Input Panel -->
         <div class="panel p-4 rounded-lg mb-4 shadow-lg">
             <label class="block text-xs mb-2 text-gray-400">INGRESAR COMANDO / PROMPT</label>
-            <div class="flex gap-2">
-                <input type="text" id="userInput" placeholder="Escribe aquí..." 
-                    class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-green-500 transition-colors"
-                    value="iniciar sistema">
+            <div class="flex flex-col gap-2">
+                <textarea id="userInput" placeholder="Escribe aquí..." rows="4"
+                    class="w-full bg-black border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-green-500 transition-colors">iniciar sistema</textarea>
                 <button onclick="runProtocol()" 
-                    class="bg-green-900 hover:bg-green-700 text-white px-4 py-2 rounded border border-green-500 font-bold transition">
-                    EJECUTAR
+                    class="w-full bg-green-900 hover:bg-green-700 text-white px-4 py-2 rounded border border-green-500 font-bold transition">
+                    EJECUTAR PROTOCOLO
                 </button>
             </div>
+
+            <!-- Test Scenarios -->
+            <div class="mt-3 border-t border-gray-800 pt-2">
+                <label class="block text-xs mb-2 text-gray-500">ESCENARIOS DE PRUEBA:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="loadScenario(1)" class="text-xs bg-gray-800 hover:bg-gray-700 text-green-400 border border-gray-600 rounded px-2 py-1 transition">
+                        > ENTIDAD LIMINAL
+                    </button>
+                    <button onclick="loadScenario(2)" class="text-xs bg-gray-800 hover:bg-gray-700 text-red-400 border border-gray-600 rounded px-2 py-1 transition">
+                        > TRANSFORMACIÓN VISCERAL
+                    </button>
+                </div>
+            </div>
+
             <div class="mt-2 text-xs text-gray-500">
                 <span class="mr-2">Test Bloqueo: "ataque", "virus"</span>
             </div>
@@ -99,6 +112,16 @@
 
         const blacklist = ["ataque", "virus", "hackear", "destruir", "inyeccion"];
         let isProcessing = false;
+
+        function loadScenario(id) {
+            const scenarios = {
+                1: `**Prompt:** A pale, elongated humanoid entity with asymmetrical facial features, sunken eye sockets, and a grotesque, unnaturally wide smile, standing motionless in a dim, liminal hallway. \n**Atmosphere:** Intense psychological unease and Uncanny Valley effect; desaturated color palette with a "lost media" aesthetic. \n**Technical Details:** 8K resolution, distorted perspective, lighting inspired by Caravaggio's "blasphemous darkness," sharp shadows, film grain, hyper-realistic rendering, uncomfortable framing to enhance the threat.`,
+                2: `**Prompt:** A humanoid figure in the midst of a visceral transformation, featuring morphing flesh, necrotic decay, and writhing parasites visible beneath the translucent, sickly skin. \n**Atmosphere:** Suffocating proximity; a visceral color palette dominated by raw reds, bruising purples, and necrotic tones. \n**Technical Details:** 8K resolution, macro photography focus, cold and raw surgical lighting (Inverted Rembrandt style), extreme contrast, hyper-detailed skin textures, moist and glistening surfaces, high-end digital art style.`
+            };
+            if (scenarios[id]) {
+                document.getElementById('userInput').value = scenarios[id];
+            }
+        }
 
         function resetSystem() {
             document.getElementById('userInput').value = '';
